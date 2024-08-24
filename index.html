@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>キャラクター相関図</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <h1>キャラクター相関図</h1>
+    
+    <svg id="relationship-chart" width="800" height="600"></svg>
+    
+    <div class="character" id="flock" style="position:absolute; left:50px; top:50px;">
+        <img src="flock.jpg" alt="Flock" width="100" height="100">
+        <p>Flock</p>
+    </div>
+    
+    <div class="character" id="thread" style="position:absolute; left:650px; top:50px;">
+        <img src="thread.jpg" alt="Thread" width="100" height="100">
+        <p>Thread</p>
+    </div>
+    
+    <div class="character" id="heishin" style="position:absolute; left:50px; top:450px;">
+        <img src="heishin.jpg" alt="Heishin" width="100" height="100">
+        <p>Heishin</p>
+    </div>
+
+    <!-- 詳細表示用のモーダルウィンドウ -->
+    <div id="character-detail-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <img id="modal-img" src="" alt="Character Image">
+            <h2 id="modal-name"></h2>
+            <p id="modal-description"></p>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
