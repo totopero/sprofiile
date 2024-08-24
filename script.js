@@ -1,14 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     const svg = document.getElementById('relationship-chart');
 
-    // キャラクターごとのハイライトカラーを定義
-    const characterColors = {
-        flock: 'blue',
-        thread: 'green',
-        heishin: 'red',
-        // 他のキャラクターもここに追加
-    };
-
     // キャラクターの詳細データ
     const characterDetails = {
         flock: {
@@ -23,14 +15,52 @@ document.addEventListener('DOMContentLoaded', () => {
         },
         heishin: {
             img: 'heishin.jpg',
-            name: 'Heishin',
-            description: 'Heishinの詳細情報。'
+            name: 'Heysin',
+            description: 'Heysinの詳細情報。'
         },
         // 他のキャラクターもここに追加
     };
 
+    // キャラクターの位置
+    const positions = {
+        flock: { x: 100, y: 100 },
+        thread: { x: 650, y: 100 },
+        heishin: { x: 100, y: 450 },
+        // 他のキャラクターもここに追加
+    };
+
+    // キャラクターの画像と名前を表示
+    function createCharacter(name, position) {
+        const character = document.createElement('div');
+        character.classList.add('character');
+        character.style.left = position.x + 'px';
+        character.style.top = position.y + 'px';
+
+        const img = document.createElement('img');
+        img.src = characterDetails[name].img;
+        img.alt = characterDetails[name].name;
+        img.width = 100; // 画像の幅
+        img.height = 100; // 画像の高さ
+
+        const label = document.createElement('div');
+        label.textContent = characterDetails[name].name;
+
+        character.appendChild(img);
+        character.appendChild(label);
+
+        character.addEventListener('mouseover', () => highlightConnections(name));
+        character.addEventListener('mouseout', () => resetConnections());
+
+        document.body.appendChild(character);
+    }
+
     // 矢印を描画する関数
-    function drawArrow(x1, y1, x2, y2, label, id) {
+    function drawArrow(start, end, label, id) {
+        const x1 = start.x + 50; // キャラクターの中心から右にずらす
+        const y1 = start.y + 100; // キャラクターの中心から下にずらす
+        const x2 = end.x + 50; // キャラクターの中心から右にずらす
+        const y2 = end.y + 100; // キャラクターの中心から下にずらす
+
         const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
         line.setAttribute("x1", x1);
         line.setAttribute("y1", y1);
@@ -52,85 +82,46 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // キャラクター間の矢印を描画
-    drawArrow(100, 100, 700, 100, '友人', 'flock-thread');
-    drawArrow(100, 100, 100, 500, '協力者', 'flock-heishin');
+    drawArrow(positions.flock, positions.thread, '友人', 'flock-thread');
+    drawArrow(positions.flock, positions.heishin, '協力者', 'flock-heishin');
 
-    // ハイライトする関数（キャラクターごとの色を使用）
-    function highlightRelations(characterId) {
-        const color = characterColors[characterId] || 'blue'; // デフォルト色は青
-        document.querySelectorAll('.line').forEach(line => {
-            if (line.id.includes(characterId)) {
-                line.classList.add('highlight');
-                line.classList.remove('greyed');
-                line.style.stroke = color;
-            } else {
-                line.classList.add('greyed');
-                line.classList.remove('highlight');
-                line.style.stroke = 'grey';
-            }
-        });
-
-        document.querySelectorAll('.relation-label').forEach(label => {
-            if (label.id.includes(characterId)) {
-                label.style.fill = color;
-            } else {
-                label.style.fill = 'grey';
-            }
-        });
+    // キャラクターの詳細を表示する関数
+    function showDetails(name) {
+        const details = document.getElementById('details');
+        const character = characterDetails[name];
+        details.innerHTML = `
+            <h2>${character.name}</h2>
+            <img src="${character.img}" alt="${character.name}" width="200">
+            <p>${character.description}</p>
+        `;
     }
 
-    // ハイライト解除する関数
-    function resetHighlights() {
-        document.querySelectorAll('.line').forEach(line => {
-            line.classList.remove('highlight');
-            line.classList.remove('greyed');
-            line.style.stroke = 'black'; // デフォルトの色に戻す
-        });
+    // キャラクターの関係をハイライトする関数
+    function highlightConnections(name) {
+        const relatedLines = svg.querySelectorAll(`[id^="${name}"]`);
+        relatedLines.forEach(line => line.classList.add('highlight'));
 
-        document.querySelectorAll('.relation-label').forEach(label => {
-            label.style.fill = 'black'; // デフォルトの色に戻す
-        });
+        const allLines = svg.querySelectorAll('.line:not(.highlight)');
+        allLines.forEach(line => line.classList.add('greyed'));
+
+        showDetails(name);
     }
 
-    // キャラクターにマウスホバーとマウスアウトのイベントリスナーを追加
-    document.querySelectorAll('.character').forEach(character => {
-        character.addEventListener('mouseenter', () => {
-            const id = character.id;
-            highlightRelations(id);
-        });
+    // キャラクターの関係のハイライトをリセットする関数
+    function resetConnections() {
+        const highlightedLines = svg.querySelectorAll('.highlight');
+        highlightedLines.forEach(line => line.classList.remove('highlight'));
 
-        character.addEventListener('mouseleave', () => {
-            resetHighlights();
-        });
-    });
+        const greyedLines = svg.querySelectorAll('.greyed');
+        greyedLines.forEach(line => line.classList.remove('greyed'));
 
-    // モーダルウィンドウを開閉するためのイベントリスナー
-    const modal = document.getElementById('character-detail-modal');
-    const modalImg = document.getElementById('modal-img');
-    const modalName = document.getElementById('modal-name');
-    const modalDescription = document.getElementById('modal-description');
-    const closeBtn = document.getElementsByClassName('close')[0];
+        const details = document.getElementById('details');
+        details.innerHTML = ''; // 詳細情報をクリア
+    }
 
-    // キャラクタークリック時のイベントリスナー
-    document.querySelectorAll('.character').forEach(character => {
-        character.addEventListener('click', () => {
-            const id = character.id;
-            modalImg.src = characterDetails[id].img;
-            modalName.textContent = characterDetails[id].name;
-            modalDescription.textContent = characterDetails[id].description;
-            modal.style.display = 'block';
-        });
-    });
-
-    // モーダルを閉じるイベントリスナー
-    closeBtn.addEventListener('click', () => {
-        modal.style.display = 'none';
-    });
-
-    // モーダルの外側をクリックしたときに閉じる
-    window.addEventListener('click', (event) => {
-        if (event.target == modal) {
-            modal.style.display = 'none';
-        }
-    });
+    // キャラクターの作成
+    createCharacter('flock', positions.flock);
+    createCharacter('thread', positions.thread);
+    createCharacter('heishin', positions.heishin);
+    // 他のキャラクターもここに追加
 });
